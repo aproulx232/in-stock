@@ -2,6 +2,8 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from twilio.rest import Client
+import config
 
 
 def main():
@@ -12,11 +14,11 @@ def main():
     evga_3070_backplate = (
         "https://www.newegg.com/evga-geforce-rtx-3070-08g-p5-3751-kr/p/N82E16814487528#"
     )
-    test_url = "https://www.newegg.com/p/N82E16813157923?Item=N82E16813157923"
-    driver.get(test_url)
+    test_in_stock_url = "https://www.newegg.com/p/N82E16813157923?Item=N82E16813157923"
+    driver.get(test_in_stock_url)
     close_pop_up(driver)
     if not is_sold_out(driver):
-        notify()
+        notify(test_in_stock_url)
     driver.quit()
 
 
@@ -44,8 +46,15 @@ def close_pop_up(driver):
         print("No Pop Up", e)
 
 
-def notify():
-    pass
+def notify(url):
+    account_sid = config.account_sid
+    auth_token = config.auth_token
+    client = Client(account_sid, auth_token)
+
+    to_number = config.to_number
+    from_number = config.from_number
+    body = "Item in stock here: " + url
+    message = client.messages.create(from_=from_number, body=body, to=to_number)
 
 
 if __name__ == "__main__":
